@@ -5,6 +5,7 @@ import Header from "@/components/Header";
 import Link from 'next/link'
 import { ethers } from "ethers";
 import { useEffect, useState } from "react";
+import Ballot from '../build/contracts/Ballot.json';
 
 
 
@@ -12,6 +13,7 @@ export default function Home() {
 
 const [provider, setProvider] = useState<ethers.BrowserProvider | null>();
 const [signer, setSigner] = useState<ethers.Signer>();
+const [contract, setContract] = useState<ethers.Contract | null>(null);
 
 useEffect(() => {
   async function initializeProvider() {
@@ -40,6 +42,24 @@ useEffect(() => {
 }, []);
 
 console.log(signer)
+
+function initializeContract(){
+  const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
+  if(!contractAddress){
+    console.error("Contract address is not set in environment variables.")
+    return;
+  }
+  if(signer){
+    const contract = new ethers.Contract(contractAddress, Ballot.abi, signer)
+  }
+  else{
+    console.error("No signer for the contract!")
+    return;
+  }
+}
+
+initializeContract();
+
 
   return (
     <div className="flex flex-col pt-[10vh] items-center">
