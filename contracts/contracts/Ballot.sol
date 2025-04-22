@@ -30,6 +30,10 @@ contract Ballot {
         }
     }
 
+    function getProposalCount() public view returns (uint256) {
+        return proposals.length;
+    }
+
     function giveRightToVote(address voter) external {
         require(msg.sender == chairperson, "Only chairperson can give right to vote.");
         require(!voters[voter].voted, "The voter already voted.");
