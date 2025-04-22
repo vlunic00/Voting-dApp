@@ -1,12 +1,13 @@
 const Ballot = artifacts.require("Ballot");
 const web3 = require('web3');
+const ethers = require("ethers");
 
 module.exports = async function (deployer) {
 
     const proposalNames = [
-        web3.utils.toHex("A"),
-        web3.utils.toHex("B"),
-        web3.utils.toHex("C")
+        ethers.encodeBytes32String("A"),
+        ethers.encodeBytes32String("B"),
+        ethers.encodeBytes32String("C"),
     ];
     await deployer.deploy(Ballot, proposalNames);
 };
