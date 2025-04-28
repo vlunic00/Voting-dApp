@@ -15,6 +15,7 @@ const [signer, setSigner] = useState<ethers.Signer>();
 const [contract, setContract] = useState<ethers.Contract | null>(null);
 const [candidates, setCandidates] = useState<string[]>([]);
 
+
 useEffect(() => {
   async function initializeProvider() {
     if (typeof window.ethereum !== 'undefined') {
@@ -63,8 +64,8 @@ useEffect(() => {
   
   async function getCandidates(connectedContract:ethers.Contract|null){
     const ethers = require('ethers')
-      if(connectedContract){
-        try{
+    if(connectedContract){
+      try{
           const proposalCountBigNumber = await connectedContract.getProposalCount();
           const proposalCountString = proposalCountBigNumber.toString()
           const proposalCount = Number(proposalCountString);
@@ -74,9 +75,7 @@ useEffect(() => {
           for (let i = 0; i < proposalCount; i++) {
             const proposal = await connectedContract.proposals(i);
             // Convert bytes32 to string
-            console.log(web3.utils.toHex("A"))
             const name = ethers.decodeBytes32String(proposal.name);
-            console.log(name);
             candidateNames.push(name);
           }
           setCandidates(candidateNames)
@@ -85,6 +84,9 @@ useEffect(() => {
         catch (error){
           console.error("Error fetching candidates: ", error)
         }
+      }
+      else{
+        console.log("No contract!")
       }
   }
   
@@ -97,7 +99,7 @@ useEffect(() => {
     <div className="flex flex-col pt-[10vh] items-center">
     <Header />
     <div className="mt-20">
-      <CandidateList />
+      <CandidateList candidates={candidates} />
     </div>
     </div>
   );

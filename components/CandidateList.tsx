@@ -1,11 +1,12 @@
 
 
-function CandidateList(){
+
+function CandidateList( {candidates} ){
     return(
         <div className="p-8 border-2 border-slate-600 rounded-2xl">
-            <p className="py-2">Candidate A</p>
-            <p className="py-2">Candidate B</p>
-            <p className="py-2">Candidate C</p>
+            {candidates.map((candidate: string) => (
+                <p className="py-2">{candidate}</p>
+            ))}
         </div>
     )
 }
