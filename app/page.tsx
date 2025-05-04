@@ -5,63 +5,18 @@ import Header from "@/components/Header";
 import { ethers, decodeBytes32String, Contract, BrowserProvider} from "ethers";
 import { useEffect, useState } from "react";
 import Ballot from '../contracts/build/contracts/Ballot.json';
-
-
+import Link from "next/link";
+import React from "react";
+import { ContractContext, SignerContext } from "@/contexts/Web3Context";
 
 export default function Home() {
 
-const [provider, setProvider] = useState<ethers.BrowserProvider | null>();
-const [signer, setSigner] = useState<ethers.Signer>();
-const [contract, setContract] = useState<ethers.Contract | null>(null);
 const [candidates, setCandidates] = useState<string[]>([]);
 
+const contract = React.useContext(ContractContext);
+const signer = React.useContext(SignerContext);
 
 useEffect(() => {
-  async function initializeProvider() {
-    if (typeof window.ethereum !== 'undefined') {
-      try {
-        // Request account access
-        await window.ethereum.request({ method: 'eth_requestAccounts' });
-
-        const newProvider = new ethers.BrowserProvider(window.ethereum);
-        setProvider(newProvider);
-
-        const newSigner = await newProvider.getSigner();
-        setSigner(newSigner);
-        console.log("Signer set!")
-      } catch (error) {
-        console.error('Error initializing provider/signer:', error);
-      }
-    } else {
-      console.error('MetaMask or other Ethereum provider not found');
-      //Handle the lack of a provider.
-    }
-  }
-  initializeProvider();
-
-}, []);
-
-useEffect(() => {
-
-  async function initializeContract(){
-    const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
-    if(!contractAddress){
-      console.error("Contract address is not set in environment variables.")
-      return;
-    }
-    if(signer){
-
-      const newContractInstance = new ethers.Contract(contractAddress, Ballot.abi, signer)
-      setContract(newContractInstance)
-      console.log(newContractInstance);
-      await getCandidates(newContractInstance);
-    }
-    else{
-      console.error("No signer for the contract!")
-      return;
-    }
-  }
-  
   async function getCandidates(connectedContract:ethers.Contract|null){
     const ethers = require('ethers')
     if(connectedContract){
@@ -83,24 +38,38 @@ useEffect(() => {
         }
         catch (error){
           console.error("Error fetching candidates: ", error)
+          setCandidates([]);
         }
       }
       else{
-        console.log("No contract!")
+        console.log("No contract!");
+        setCandidates([]);
       }
   }
   
-  initializeContract();
-}, [signer])
+  if (contract) {
+    getCandidates(contract);
+  }
+  else {
+    console.log("No contract!");
+    setCandidates([]);
+  }
+}, [contract, signer]);
 
 
 
   return (
-    <div className="flex flex-col pt-[10vh] items-center">
-    <Header />
-    <div className="mt-20">
-      <CandidateList candidates={candidates} />
-    </div>
-    </div>
+    console.log(contract, signer),
+    <ContractContext.Provider value={contract}>
+      <SignerContext.Provider value={signer}>
+        <div className="flex flex-col pt-[10vh] items-center">
+        <Header />
+        <Link href={"/give-rights"} className="px-4 py-2 mt-5 border-2 border-slate-600 cursor-pointer rounded-2xl">Give voting rights</Link>
+        <div className="mt-20">
+          <CandidateList candidates={candidates} />
+        </div>
+        </div>
+      </SignerContext.Provider>
+    </ContractContext.Provider>
   );
 }
