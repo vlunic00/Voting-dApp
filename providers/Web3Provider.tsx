@@ -44,10 +44,10 @@ export const Web3Provider: React.FC<Web3ProviderProps> = ({ children }) => {
               return;
             }
             if(signer){
-        
               const newContractInstance = new ethers.Contract(contractAddress, Ballot.abi, signer)
               setContract(newContractInstance)
-              console.log(newContractInstance);            }
+              console.log(newContractInstance);
+            }
             else{
               console.error("No signer for the contract!")
               return;
