@@ -1,5 +1,11 @@
 "use client";
 
+declare global {
+    interface Window {
+        ethereum?: any;
+    }
+}
+
 import React, { useState, useEffect, ReactNode } from 'react';
 import { ethers } from 'ethers';
 import { ContractContext, SignerContext } from '../contexts/Web3Context';

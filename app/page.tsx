@@ -1,10 +1,10 @@
 "use client";
 
 import CandidateList from "@/components/CandidateList";
+import VoteResolution from "@/components/VoteResolution";
 import Header from "@/components/Header";
-import { ethers, decodeBytes32String, Contract, BrowserProvider} from "ethers";
+import { ethers, Contract} from "ethers";
 import { useEffect, useState } from "react";
-import Ballot from '../contracts/build/contracts/Ballot.json';
 import Link from "next/link";
 import React from "react";
 import { ContractContext, SignerContext } from "@/contexts/Web3Context";
@@ -12,6 +12,8 @@ import { ContractContext, SignerContext } from "@/contexts/Web3Context";
 export default function Home() {
 
 const [candidates, setCandidates] = useState<string[]>([]);
+const [error, setError] = useState<string | null>(null);
+const [isVotingOpen, setIsVotingOpen] = useState(true);
 
 const contract = React.useContext(ContractContext);
 const signer = React.useContext(SignerContext);
@@ -56,20 +58,37 @@ useEffect(() => {
   }
 }, [contract, signer]);
 
-
+    const handleTimeUp = () => {
+        console.log("Voting period has ended.");
+        setIsVotingOpen(false);
+    };
 
   return (
     console.log(contract, signer),
-    <ContractContext.Provider value={contract}>
-      <SignerContext.Provider value={signer}>
-        <div className="flex flex-col pt-[10vh] items-center">
-        <Header />
-        <Link href={"/give-rights"} className="px-4 py-2 mt-5 border-2 border-slate-600 cursor-pointer rounded-2xl">Give voting rights</Link>
-        <div className="mt-20">
-          <CandidateList candidates={candidates} />
+<div className="flex flex-col pt-[10vh] items-center px-4">
+            <Header />
+            {signer && (
+                <Link href={"/give-rights"} className="px-4 py-2 mt-5 border-2 border-slate-600 cursor-pointer rounded-2xl hover:bg-slate-100 transition">
+                    Give Voting Rights
+                </Link>
+            )}
+
+            <div className="mt-10 w-full flex flex-col items-center">
+                <VoteResolution
+                    votingDuration={120}
+                    onTimeUp={handleTimeUp}
+                />
+
+                {isVotingOpen ? (
+                    <CandidateList candidates={candidates} />
+                ) : (
+                    <div className="p-8 border-2 border-dashed border-slate-400 rounded-2xl text-center">
+                        <p className="text-xl text-slate-600">The voting period has ended.</p>
+                    </div>
+                )}
+
+                {error && <p className="mt-4 text-red-500">{error}</p>}
+            </div>
         </div>
-        </div>
-      </SignerContext.Provider>
-    </ContractContext.Provider>
   );
 }
