@@ -5,45 +5,34 @@ import { ContractContext } from '@/contexts/Web3Context';
 import { ethers, Contract } from 'ethers'; // Direct import for decodeBytes32String (ethers v6)
 
 interface VoteResolutionProps {
-    // The total duration of the vote in seconds
     votingDuration: number;
-    // A callback function to notify the parent component when time is up
     onTimeUp: () => void;
 }
 
 const VoteResolution: React.FC<VoteResolutionProps> = ({ votingDuration, onTimeUp }) => {
     const contract = useContext(ContractContext);
 
-    // State to manage the countdown
     const [timeLeft, setTimeLeft] = useState(votingDuration);
-    // State to hold the winner's name or the result of the election
     const [result, setResult] = useState<string | null>(null);
-    // State for loading while fetching the winner
     const [isLoadingWinner, setIsLoadingWinner] = useState(false);
 
-    // Effect to handle the countdown timer
     useEffect(() => {
-        // Don't start the timer if time is already up
         if (timeLeft <= 0) return;
 
-        // Set up an interval to decrement the timer every second
         const timerInterval = setInterval(() => {
             setTimeLeft(prevTime => prevTime - 1);
         }, 1000);
 
-        // Cleanup function to clear the interval when the component unmounts or timer finishes
         return () => clearInterval(timerInterval);
-    }, [timeLeft]); // Dependency array ensures effect reruns only if timeLeft changes
+    }, [timeLeft]);
 
-    // Effect to handle what happens when the timer runs out
     useEffect(() => {
         if (timeLeft <= 0) {
-            onTimeUp(); // Notify the parent component that time is up
-            determineWinner(); // Start the process of finding the winner
+            onTimeUp();
+            determineWinner();
         }
-    }, [timeLeft, contract]); // Run when timeLeft or contract changes
+    }, [timeLeft, contract]);
 
-    // Function to call the contract and determine the winner
     const determineWinner = async () => {
         if (!contract) {
             setResult("Error: Contract not connected.");
@@ -54,18 +43,14 @@ const VoteResolution: React.FC<VoteResolutionProps> = ({ votingDuration, onTimeU
         setIsLoadingWinner(true);
 
         try {
-            // Call the winnerName() function from the smart contract
             const winnerNameBytes32 = await contract.winnerName();
             console.log("Raw winnerName() result (bytes32):", winnerNameBytes32);
 
-            // An empty bytes32 string from the contract signifies a tie
-            // 0x0000000000000000000000000000000000000000000000000000000000000000
             const emptyBytes32 = "0x" + "00".repeat(32);
             if (winnerNameBytes32 === emptyBytes32) {
                 console.log("Tie detected!");
                 setResult("Result: It's a tie!");
             } else {
-                // Decode the bytes32 value into a readable string
                 const winnerName = ethers.decodeBytes32String(winnerNameBytes32);
                 console.log("Winner is:", winnerName);
                 setResult(`Winner: ${winnerName}`);
@@ -78,7 +63,6 @@ const VoteResolution: React.FC<VoteResolutionProps> = ({ votingDuration, onTimeU
         }
     };
 
-    // Helper function to format the time into MM:SS
     const formatTime = (seconds: number) => {
         const minutes = Math.floor(seconds / 60);
         const remainingSeconds = seconds % 60;
