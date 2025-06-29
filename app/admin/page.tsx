@@ -1,22 +1,30 @@
 "use client";
 
 import React, { useState, useContext, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Web3Context } from '@/contexts/Web3Context';
-import { ContractContext, SignerContext } from '@/contexts/Web3Context';
+import { useRouter } from 'next/navigation'; // For redirecting after starting the vote
+import { Web3Context } from '@/contexts/Web3Context'; // Adjust path if needed
+import { ContractContext, SignerContext } from '@/contexts/Web3Context'; // Assuming you kept separate contexts
 
 const AdminPage: React.FC = () => {
+    // If you have a single Web3Context
+    // const { signer, contract, startVote } = useContext(Web3Context);
 
+    // If you have separate contexts
     const contract = useContext(ContractContext);
     const signer = useContext(SignerContext);
+    // You'll need to get startVote from the main context or pass it down
 
+    // For this example, let's assume you've combined them into Web3Context
     const { startVote } = useContext(Web3Context);
 
+
+    // --- Local state for this page ---
     const [durationMinutes, setDurationMinutes] = useState<string>('5');
     const [isLoading, setIsLoading] = useState(false);
     const [isChairperson, setIsChairperson] = useState<boolean | null>(null);
-    const router = useRouter();
+    const router = useRouter(); // Hook to programmatically navigate
 
+    // Verify chairperson status
     useEffect(() => {
         const checkStatus = async () => {
             if (contract && signer) {
@@ -42,11 +50,14 @@ const AdminPage: React.FC = () => {
             return;
         }
 
+        // Call the globally shared startVote function from the context
         startVote(duration * 60);
 
+        // Redirect the chairperson to the homepage to see the active election
         router.push('/');
     };
 
+    // Render loading or unauthorized state
     if (isChairperson === null) {
         return <div className="flex justify-center items-center h-screen"><p>Verifying authorization...</p></div>;
     }
@@ -54,6 +65,7 @@ const AdminPage: React.FC = () => {
         return <div className="flex justify-center items-center h-screen"><p>You are not authorized to view this page.</p></div>;
     }
 
+    // Render the admin panel if authorized
     return (
         <div className="flex justify-center items-center h-screen">
             <div className="w-full max-w-lg p-8 text-center bg-white border-2 border-blue-600 rounded-2xl shadow-xl">

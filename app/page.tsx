@@ -48,6 +48,23 @@ export default function Home() {
         if (contract) getCandidates(contract);
     }, [contract]);
 
+    // Effect to fetch candidates
+    useEffect(() => {
+        const getCandidates = async (c: Contract) => {
+            try {
+                const count = Number((await c.getProposalCount()).toString());
+                const names = [];
+                for (let i = 0; i < count; i++) {
+                    const proposal = await c.proposals(i);
+                    names.push(decodeBytes32String(proposal.name));
+                }
+                setCandidates(names);
+            } catch (err: any) { setError(`Failed to load candidates: ${err.message}`); }
+        };
+        if (contract) getCandidates(contract);
+    }, [contract]);
+
+    // Local handler for when the timer component finishes
     const handleTimeUp = () => {
         setIsTimeUp(true);
     };
@@ -83,7 +100,18 @@ export default function Home() {
 
     return (
         <div className="flex flex-col pt-[10vh] items-center px-4">
+    return (
+        <div className="flex flex-col pt-[10vh] items-center px-4">
             <Header />
+            {signer && isChairperson && (
+                <div className="flex space-x-4">
+                    <Link href={"/give-rights"} className="px-4 py-2 mt-5 border-2 border-slate-600 cursor-pointer rounded-2xl hover:bg-slate-100 transition">
+                        Manage Voter Rights
+                    </Link>
+                    <Link href={"/admin"} className="px-4 py-2 mt-5 bg-blue-500 text-white cursor-pointer rounded-2xl hover:bg-blue-600 transition">
+                        Admin Panel
+                    </Link>
+                </div>
             {signer && isChairperson && (
                 <div className="flex space-x-4">
                     <Link href={"/give-rights"} className="px-4 py-2 mt-5 border-2 border-slate-600 cursor-pointer rounded-2xl hover:bg-slate-100 transition">
@@ -103,5 +131,6 @@ export default function Home() {
                 <CandidateList candidates={candidates} isVotingActive={isVotingCurrentlyActive} />
             </div>
         </div>
+    );
     );
 }

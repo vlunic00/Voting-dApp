@@ -3,6 +3,8 @@
 import React, { useState, useContext } from 'react';
 import { ethers, Contract } from 'ethers';
 import { ContractContext, SignerContext } from '@/contexts/Web3Context';
+import { ethers, Contract } from 'ethers';
+import { ContractContext, SignerContext } from '@/contexts/Web3Context';
 
 type CandidateListProps = {
     candidates: string[];
@@ -22,7 +24,7 @@ function CandidateList({ candidates, isVotingActive }: CandidateListProps) {
         if (!isVotingActive) return;
         setMessage(null); 
         setSelectedCandidate({ name: candidateName, index: candidateIndex });
-        setIsModalOpen(true);
+        setIsModalOpen(true); 
     };
 
     const handleConfirmVote = async () => {
@@ -70,33 +72,47 @@ function CandidateList({ candidates, isVotingActive }: CandidateListProps) {
                     <button
                         key={index}
                         onClick={() => handleVoteClick(candidate, index)}
-                        disabled={!isVotingActive}
-                        className="py-3 px-4 text-lg text-center bg-white border-2 border-gray-300 rounded-lg transition duration-150 ease-in-out focus:outline-none disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed enabled:hover:bg-gray-100 enabled:hover:border-blue-500 enabled:focus:ring-2 enabled:focus:ring-blue-500"
+                        className="py-3 px-4 text-lg text-center bg-white border-2 border-gray-300 rounded-lg cursor-pointer hover:bg-gray-100 hover:border-blue-500 transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                         {candidate}
                     </button>
                 ))}
             </div>
 
+            {isLoading && <p className="text-center mt-4">Processing your vote...</p>}
             {message && (
                 <div className={`mt-4 p-3 rounded-md text-center break-words ${message.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                     {message.text}
                 </div>
             )}
 
-            {isModalOpen && selectedCandidate && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-                    <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm">
-                        <h3 className="text-xl font-bold text-center">Confirm Your Vote</h3>
-                        <p className="text-center my-4">Are you sure you want to vote for <span className="font-semibold">{selectedCandidate.name}</span>?</p>
-                        <div className="flex justify-around mt-6">
-                            <button onClick={() => setIsModalOpen(false)} className="px-6 py-2 border rounded-md text-gray-700 hover:bg-gray-100" disabled={isLoading}>Cancel</button>
-                            <button onClick={handleConfirmVote} className={`px-6 py-2 border rounded-md text-white ${isLoading ? 'bg-blue-300 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'}`} disabled={isLoading}>{isLoading ? 'Voting...' : 'Yes, Confirm'}</button>
-                        </div>
+        {isModalOpen && selectedCandidate && (
+            // Modal backdrop
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+                {/* Modal content */}
+                <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm">
+                    <h3 className="text-xl font-bold text-center">Confirm Your Vote</h3>
+                    <p className="text-center my-4">Are you sure you want to vote for <span className="font-semibold">{selectedCandidate.name}</span>?</p>
+                    <div className="flex justify-around mt-6">
+                        <button
+                            onClick={() => setIsModalOpen(false)} // Just close the modal
+                            className="px-6 py-2 border rounded-md text-gray-700 hover:bg-gray-100"
+                            disabled={isLoading}
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            onClick={handleConfirmVote} // This will trigger the transaction
+                            className={`px-6 py-2 border rounded-md text-white ${isLoading ? 'bg-blue-300 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'}`}
+                            disabled={isLoading}
+                        >
+                            {isLoading ? 'Voting...' : 'Yes, Confirm'}
+                        </button>
                     </div>
                 </div>
-            )}
-        </div>
+            </div>
+        )}
+    </div>
     );
 }
 
