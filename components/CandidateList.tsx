@@ -3,8 +3,6 @@
 import React, { useState, useContext } from 'react';
 import { ethers, Contract } from 'ethers';
 import { ContractContext, SignerContext } from '@/contexts/Web3Context';
-import { ethers, Contract } from 'ethers';
-import { ContractContext, SignerContext } from '@/contexts/Web3Context';
 
 type CandidateListProps = {
     candidates: string[];

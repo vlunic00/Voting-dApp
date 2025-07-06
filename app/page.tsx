@@ -18,20 +18,46 @@ export default function Home() {
     const [isTimeUp, setIsTimeUp] = useState(false);
 
 
-    useEffect(() => {
-        const checkStatus = async () => {
-            if (contract && signer) {
-                try {
-                    const chairpersonAddr = await contract.chairperson();
-                    const signerAddr = await signer.getAddress();
-                    setIsChairperson(chairpersonAddr.toLowerCase() === signerAddr.toLowerCase());
-                } catch { setIsChairperson(false); }
-            } else {
-                setIsChairperson(null);
+useEffect(() => {
+    const checkStatus = async () => {
+        console.log("Checking status. Contract:", contract, "Signer:", signer);
+
+        if (contract && signer) {
+            try {
+                if (!signer.provider) {
+                    console.error("Diagnosis: Signer is not connected to a provider!");
+                    return;
+                }
+                const network = await signer.provider.getNetwork();
+                console.log("Diagnosis: Connected to network:", network.name, "Chain ID:", network.chainId);
+
+                console.log("Attempting to call contract.chairperson()...");
+                const chairpersonAddr = await contract.chairperson();
+                const signerAddr = await signer.getAddress();
+
+                const isMatch = chairpersonAddr.toLowerCase() === signerAddr.toLowerCase();
+                console.log("Fetched Chairperson Address:", chairpersonAddr);
+                console.log("Fetched Signer Address:", signerAddr);
+                console.log("Are they a match?", isMatch);
+
+                setIsChairperson(isMatch);
+
+            } catch (error: any) {
+                console.error("CRITICAL: An error occurred while checking chairperson status:", error);
+                if(error.code) console.error("Error Code:", error.code);
+                if(error.reason) console.error("Error Reason:", error.reason);
+                
+                setIsChairperson(false);
             }
-        };
-        checkStatus();
-    }, [contract, signer]);
+        } else {
+            console.log("Skipping status check: contract or signer is not yet available.");
+            setIsChairperson(null);
+        }
+    };
+
+    checkStatus();
+
+}, [contract, signer]);
 
     useEffect(() => {
         const getCandidates = async (c: Contract) => {
@@ -48,7 +74,6 @@ export default function Home() {
         if (contract) getCandidates(contract);
     }, [contract]);
 
-    // Effect to fetch candidates
     useEffect(() => {
         const getCandidates = async (c: Contract) => {
             try {
@@ -64,7 +89,6 @@ export default function Home() {
         if (contract) getCandidates(contract);
     }, [contract]);
 
-    // Local handler for when the timer component finishes
     const handleTimeUp = () => {
         setIsTimeUp(true);
     };
@@ -97,21 +121,10 @@ export default function Home() {
                 return null;
         }
     };
-
     return (
-        <div className="flex flex-col pt-[10vh] items-center px-4">
-    return (
+        <>
         <div className="flex flex-col pt-[10vh] items-center px-4">
             <Header />
-            {signer && isChairperson && (
-                <div className="flex space-x-4">
-                    <Link href={"/give-rights"} className="px-4 py-2 mt-5 border-2 border-slate-600 cursor-pointer rounded-2xl hover:bg-slate-100 transition">
-                        Manage Voter Rights
-                    </Link>
-                    <Link href={"/admin"} className="px-4 py-2 mt-5 bg-blue-500 text-white cursor-pointer rounded-2xl hover:bg-blue-600 transition">
-                        Admin Panel
-                    </Link>
-                </div>
             {signer && isChairperson && (
                 <div className="flex space-x-4">
                     <Link href={"/give-rights"} className="px-4 py-2 mt-5 border-2 border-slate-600 cursor-pointer rounded-2xl hover:bg-slate-100 transition">
@@ -131,6 +144,6 @@ export default function Home() {
                 <CandidateList candidates={candidates} isVotingActive={isVotingCurrentlyActive} />
             </div>
         </div>
-    );
+        </>
     );
 }

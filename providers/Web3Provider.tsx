@@ -5,9 +5,8 @@ import { ethers } from 'ethers';
 import { Web3Context, VotingState } from '@/contexts/Web3Context';
 import BallotABI from '@/contracts/build/contracts/Ballot.json';
 
-// Define the props for the provider component
 interface Web3ProviderProps {
-    children: ReactNode; // To wrap other components
+    children: ReactNode;
 }
 
 export const Web3Provider: React.FC<Web3ProviderProps> = ({ children }) => {
@@ -98,9 +97,6 @@ export const Web3Provider: React.FC<Web3ProviderProps> = ({ children }) => {
     };
 
     return (
-        <Web3Context.Provider value={contextValue}>
-            {children}
-        </Web3Context.Provider>
         <Web3Context.Provider value={contextValue}>
             {children}
         </Web3Context.Provider>
